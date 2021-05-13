@@ -5,18 +5,24 @@
 (defmethod unavailable-under-restriction-p (description)
   nil)
 
+(defgeneric restricted-description-type (description))
+
 (macrolet ((unavailable-under-restriction (&rest names)
              `(progn
-                ,@(loop for name in names
-                        collect `(defmethod unavailable-under-restriction-p
-                                     ((description ,name))
-                                   t)))))
+                ,@(loop for (name type) in names
+                        collect `(progn
+                                   (defmethod unavailable-under-restriction-p
+                                       ((description ,name))
+                                     t)
+                                   (defmethod restricted-description-type
+                                       ((description ,name))
+                                     ,type))))))
   (unavailable-under-restriction
-   trucler:lexical-variable-description
-   trucler:special-variable-description
-   trucler:local-function-description
-   trucler:block-description
-   trucler:tag-description))
+   (trucler:lexical-variable-description "lexical variable")
+   (trucler:special-variable-description "special variable")
+   (trucler:local-function-description "local function")
+   (trucler:block-description "block")
+   (trucler:tag-description "tag")))
 
 (defmethod trucler:restrict-for-macrolet-expander
     ((client client) (environment environment))

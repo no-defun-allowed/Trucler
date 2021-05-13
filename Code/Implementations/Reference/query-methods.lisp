@@ -14,8 +14,9 @@
     (let ((unrestricted-description
             (funcall function client unrestricted-environment name)))
       (unless (null unrestricted-description)
-        (error "~s is not available to a restricted environment"
-               unrestricted-description)))
+        (error "The ~a ~s is not available at compile-time."
+               (restricted-description-type unrestricted-description)
+               (trucler:name unrestricted-description))))
     nil))
 
 (defmethod trucler:describe-variable ((client client) (environment environment) name)
