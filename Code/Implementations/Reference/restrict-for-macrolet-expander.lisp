@@ -32,4 +32,5 @@
                (block-description environment))
     :tag-description
     (remove-if #'unavailable-under-restriction-p
-               (tag-description environment))))
+               (tag-description environment))
+    :unrestricted-environment environment))

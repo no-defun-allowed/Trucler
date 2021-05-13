@@ -39,7 +39,11 @@
    (%declarations-description
     :initform '()
     :initarg :declarations-description
-    :reader declarations-description)))
+    :reader declarations-description)
+   (%unrestricted-environment
+    :initform nil
+    :initarg :unrestricted-environment
+    :reader unrestricted-environment)))
 
 (defmethod trucler:cloning-information append ((object environment))
   '((:global-environment global-environment)
@@ -47,4 +51,5 @@
     (:variable-description variable-description)
     (:block-description block-description)
     (:tag-description tag-description)
-    (:optimize-description optimize-description)))
+    (:optimize-description optimize-description)
+    (:unrestricted-environment unrestricted-environment)))

@@ -1,5 +1,23 @@
 (cl:in-package #:trucler-reference)
 
+;;; If this is a restricted environment and there is no description,
+;;; then check if there is a description in the unrestricted
+;;; environment. If there is, then the description is restricted and
+;;; signal an error.
+(defun check-restricted-description (description function client environment name)
+  (unless (null description)
+    (return-from check-restricted-description description))
+  (let ((unrestricted-environment
+          (unrestricted-environment environment)))
+    (when (null unrestricted-environment)
+      (return-from check-restricted-description nil))
+    (let ((unrestricted-description
+            (funcall function client unrestricted-environment name)))
+      (unless (null unrestricted-description)
+        (error "~s is not available to a restricted environment"
+               unrestricted-description)))
+    nil))
+
 (defmethod trucler:describe-variable ((client client) (environment environment) name)
   (let* ((descriptions (variable-description environment))
          (description (find name descriptions :test #'eq :key #'trucler:name)))
@@ -11,7 +29,8 @@
           ;; Cache the global description locally.
           (reinitialize-instance environment
             :variable-description (cons description descriptions)))))
-    description))
+    (check-restricted-description description #'trucler:describe-variable
+                                  client environment name)))
 
 (defmethod trucler:describe-function ((client client) (environment environment) name)
   (let* ((descriptions (function-description environment))
@@ -24,17 +43,20 @@
           ;; Cache the global description locally.
           (reinitialize-instance environment
             :function-description (cons description descriptions)))))
-    description))
+    (check-restricted-description description #'trucler:describe-function
+                                  client environment name)))
 
 (defmethod trucler:describe-block ((client client) (environment environment) name)
   (let* ((descriptions (block-description environment))
          (description (find name descriptions :test #'eq :key #'trucler:name)))
-    description))
+    (check-restricted-description description #'trucler:describe-block
+                                  client environment name)))
 
 (defmethod trucler:describe-tag ((client client) (environment environment) tag)
   (let* ((descriptions (tag-description environment))
          (description (find tag descriptions :test #'eql :key #'trucler:name)))
-    description))
+    (check-restricted-description description #'trucler:describe-tag
+                                  client environment tag)))
 
 (defmethod trucler:describe-optimize ((client client) (environment environment))
   (let* ((description (optimize-description environment)))
