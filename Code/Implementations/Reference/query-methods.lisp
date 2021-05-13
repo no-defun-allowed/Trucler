@@ -1,30 +1,5 @@
 (cl:in-package #:trucler-reference)
 
-(defgeneric check-restriction (environment description))
-
-(defmethod check-restriction (environment description)
-  description)
-
-(defmethod check-restriction (environment (description trucler:local-function-description))
-  (if (restricted-p environment)
-      (error "Macrolet expander uses local function ~s" (trucler:name description))
-      description))
-
-(defmethod check-restriction (environment (description trucler:lexical-variable-description))
-  (if (restricted-p environment)
-      (error "Macrolet expander uses lexical variable ~s" (trucler:name description))
-      description))
-
-(defmethod check-restriction (environment (description trucler:block-description))
-  (if (restricted-p environment)
-      (error "Macrolet expander uses block ~s" (trucler:name description))
-      description))
-
-(defmethod check-restriction (environment (description trucler:tag-description))
-  (if (restricted-p environment)
-      (error "Macrolet expander uses tag ~s" (trucler:name description))
-      description))
-
 (defmethod trucler:describe-variable ((client client) (environment environment) name)
   (let* ((descriptions (variable-description environment))
          (description (find name descriptions :test #'eq :key #'trucler:name)))
@@ -36,7 +11,7 @@
           ;; Cache the global description locally.
           (reinitialize-instance environment
             :variable-description (cons description descriptions)))))
-    (check-restriction environment description)))
+    description))
 
 (defmethod trucler:describe-function ((client client) (environment environment) name)
   (let* ((descriptions (function-description environment))
@@ -49,7 +24,7 @@
           ;; Cache the global description locally.
           (reinitialize-instance environment
             :function-description (cons description descriptions)))))
-    (check-restriction environment description)))
+    description))
 
 (defmethod trucler:describe-block ((client client) (environment environment) name)
   (let* ((descriptions (block-description environment))
@@ -59,7 +34,7 @@
 (defmethod trucler:describe-tag ((client client) (environment environment) tag)
   (let* ((descriptions (tag-description environment))
          (description (find tag descriptions :test #'eql :key #'trucler:name)))
-    (check-restriction environment description)))
+    description))
 
 (defmethod trucler:describe-optimize ((client client) (environment environment))
   (let* ((description (optimize-description environment)))
@@ -78,7 +53,7 @@
   (let ((description (declaration-description environment)))
     (if (null description)
         ;; Get from the global environment.
-        (trucler:desribe-declarations client (global-environment environment))
+        (trucler:describe-declarations client (global-environment environment))
         description)))
 
 (defmethod trucler:global-environment
